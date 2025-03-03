@@ -3,33 +3,34 @@ const scanButton = document.getElementById('scanButton');
 const resultDiv = document.getElementById('result');
 
 scanButton.addEventListener('click', () => {
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then(stream => {
-            preview.srcObject = stream;
-            preview.play();
-            scanQRCode();
-        })
-        .catch(error => {
-            console.error('카메라 접근 실패:', error);
-            resultDiv.textContent = '카메라 접근 실패: ' + error.message;
-        });
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: preview,
+            constraints: {
+                width: 640,
+                height: 480,
+                facingMode: "environment"
+            }
+        },
+        decoder: {
+            readers: ["qr_code_reader"]
+        }
+    }, function(err) {
+        if (err) {
+            console.error('Quagga 초기화 실패:', err);
+            resultDiv.textContent = 'Quagga 초기화 실패: ' + err.message;
+            return;
+        }
+        Quagga.start();
+        Quagga.onDetected(onDetected);
+    });
 });
 
-function scanQRCode() {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = preview.videoWidth;
-    canvas.height = preview.videoHeight;
-    context.drawImage(preview, 0, 0, canvas.width, canvas.height);
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-    if (code) {
-        preview.srcObject.getVideoTracks().forEach(track => track.stop());
-        sendDataToServer(code.data);
-    } else {
-        requestAnimationFrame(scanQRCode);
-    }
+function onDetected(result) {
+    Quagga.stop();
+    sendDataToServer(result.codeResult.code);
 }
 
 function sendDataToServer(qrCodeData) {
