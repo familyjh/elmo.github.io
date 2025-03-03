@@ -1,4 +1,11 @@
-body {
-    font-family: sans-serif;
-    text-align: center;
+.success-animation {
+    animation: success-fade 1s ease-in-out;
+    background-color: lightgreen;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+@keyframes success-fade {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
 }
