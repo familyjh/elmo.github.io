@@ -19,10 +19,12 @@ async function scanQRCode() {
     try {
         const result = await codeReader.decodeFromVideoElement(preview);
         preview.srcObject.getVideoTracks().forEach(track => track.stop());
-        resultDiv.textContent = 'QR 코드 인식 성공: ' + result.text; // 인식 결과 표시
+        resultDiv.innerHTML = '<span class="success-animation">QR 코드 인식 성공: ' + result.text + '</span>'; // 인식 성공 시 애니메이션 효과
         sendDataToServer(result.text);
     } catch (error) {
-        if (!(error instanceof ZXing.NotFoundException)) {
+        if (error instanceof ZXing.NotFoundException) {
+            resultDiv.textContent = 'QR 코드를 찾을 수 없습니다. 다시 스캔해주세요.'; // 인식 실패 메시지 표시
+        } else {
             console.error('QR 코드 스캔 오류:', error);
             resultDiv.textContent = 'QR 코드 스캔 오류: ' + error.message;
         }
@@ -41,11 +43,11 @@ function sendDataToServer(qrCodeData) {
     })
         .then(response => response.json())
         .then(data => {
-            console.log('API 응답:', data); // API 응답 확인
-            resultDiv.textContent = 'API 응답: ' + JSON.stringify(data);
+            console.log('API 응답:', data);
+            resultDiv.innerHTML = 'API 응답: ' + JSON.stringify(data);
         })
         .catch(error => {
             console.error('API 요청 실패:', error);
-            resultDiv.textContent = 'API 요청 실패: ' + error.message;
+            resultDiv.innerHTML = 'API 요청 실패: ' + error.message;
         });
 }
