@@ -2,31 +2,32 @@ const preview = document.getElementById('preview');
 const scanButton = document.getElementById('scanButton');
 const resultDiv = document.getElementById('result');
 
-scanButton.addEventListener('click', () => {
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then(stream => {
-            preview.srcObject = stream;
-            preview.play();
-            scanQRCode();
-        })
-        .catch(error => {
-            console.error('카메라 접근 실패:', error);
-            resultDiv.textContent = '카메라 접근 실패: ' + error.message;
-        });
+scanButton.addEventListener('click', async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        preview.srcObject = stream;
+        preview.play();
+        await scanQRCode();
+    } catch (error) {
+        console.error('카메라 접근 실패:', error);
+        resultDiv.textContent = '카메라 접근 실패: ' + error.message;
+    }
 });
 
-function scanQRCode() {
+async function scanQRCode() {
     const codeReader = new ZXing.BrowserQRCodeReader();
-    codeReader.decodeFromVideoElement(preview, (result, err) => {
-        if (result) {
-            preview.srcObject.getVideoTracks().forEach(track => track.stop());
-            sendDataToServer(result.text);
+    try {
+        const result = await codeReader.decodeFromVideoElement(preview);
+        preview.srcObject.getVideoTracks().forEach(track => track.stop());
+        sendDataToServer(result.text);
+    } catch (error) {
+        if (!(error instanceof ZXing.NotFoundException)) {
+            console.error('QR 코드 스캔 오류:', error);
+            resultDiv.textContent = 'QR 코드 스캔 오류: ' + error.message;
         }
-        if (err && !(err instanceof ZXing.NotFoundException)) {
-            console.error('QR 코드 스캔 오류:', err);
-            resultDiv.textContent = 'QR 코드 스캔 오류: ' + err.message;
-        }
-    });
+        await new Promise(resolve => setTimeout(resolve, 500)); // 재시도 간격 추가
+        await scanQRCode(); // 재시도
+    }
 }
 
 function sendDataToServer(qrCodeData) {
