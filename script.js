@@ -19,6 +19,7 @@ async function scanQRCode() {
     try {
         const result = await codeReader.decodeFromVideoElement(preview);
         preview.srcObject.getVideoTracks().forEach(track => track.stop());
+        resultDiv.textContent = 'QR 코드 인식 성공: ' + result.text; // 인식 결과 표시
         sendDataToServer(result.text);
     } catch (error) {
         if (!(error instanceof ZXing.NotFoundException)) {
@@ -40,7 +41,8 @@ function sendDataToServer(qrCodeData) {
     })
         .then(response => response.json())
         .then(data => {
-            resultDiv.textContent = JSON.stringify(data);
+            console.log('API 응답:', data); // API 응답 확인
+            resultDiv.textContent = 'API 응답: ' + JSON.stringify(data);
         })
         .catch(error => {
             console.error('API 요청 실패:', error);
