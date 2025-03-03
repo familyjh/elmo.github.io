@@ -5,7 +5,7 @@ const urlsToCache = [
     '/style.css',
     '/script.js',
     '/icon.png',
-    'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'
+    'https://unpkg.com/quagga2/dist/quagga.min.js'
 ];
 
 self.addEventListener('install', function(event) {
