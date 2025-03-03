@@ -5,7 +5,7 @@ const urlsToCache = [
     '/style.css',
     '/script.js',
     '/icon.png',
-    'https://unpkg.com/quagga2/dist/quagga.min.js'
+    'https://unpkg.com/@zxing/library@latest/umd/index.min.js'
 ];
 
 self.addEventListener('install', function(event) {
